@@ -43,7 +43,7 @@ module PdfHelper
   def make_and_send_pdf(pdf_name, options = {})
     send_data_options = {:filename => pdf_name + ".pdf", :type => 'application/pdf'}
     disposition = options.delete(:disposition)
-    send_data_options.merge(disposition) if disposition
+    send_data_options[:disposition] = disposition if disposition
     send_data(make_pdf(options), send_data_options) 
   end
   

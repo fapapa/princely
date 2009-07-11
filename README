@@ -23,7 +23,8 @@ class Provider::EstimatesController < Provider::BaseController
         render :pdf => "file_name", 
                :template => "controller/action.pdf.erb", 
                :stylesheets => ["application","prince"]
-               :layout => "pdf"
+               :layout => "pdf",
+               :disposition => 'inline'
       end
     end
   end
@@ -41,6 +42,7 @@ The defaults for the render options are as follows:
 layout:      false
 template:    the template for the current controller/action
 stylesheets: none
+disposition: 'attachment'
 
 Resources
 =========

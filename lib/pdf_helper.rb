@@ -51,4 +51,14 @@ module PdfHelper
     stylesheet = stylesheet.to_s.gsub(".css","")
     File.join(ActionView::Helpers::AssetTagHelper::STYLESHEETS_DIR,"#{stylesheet}.css")
   end
+  
+  protected   # ----------------------------------------------------------------
+  
+  def send_data(data, options = {})
+    logger.info "Sending data #{options[:filename]}" if logger
+    length = data ? data.size : 0
+    send_file_headers! options.merge(:length => length)
+    @performed_render = false
+    render :status => options[:status], :text => data
+  end
 end

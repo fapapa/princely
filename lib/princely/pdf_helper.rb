@@ -1,5 +1,5 @@
 module PdfHelper
-  require 'prince'
+  require 'princely'
   
   def self.included(base)
     base.class_eval do
@@ -23,7 +23,7 @@ module PdfHelper
     options[:layout] ||= false
     options[:template] ||= File.join(controller_path,action_name)
     
-    prince = Prince.new()
+    prince = Princely.new()
     # Sets style sheets on PDF renderer
     prince.add_style_sheets(*options[:stylesheets].collect{|style| stylesheet_file_path(style)})
     
@@ -37,7 +37,11 @@ module PdfHelper
     html_string.gsub!( /src=["'](\S+\?\d*)["']/i ) { |m| 'src="' + $1.split('?').first + '"' }
     
     # Send the generated PDF file from our html string.
-    return prince.pdf_from_string(html_string)
+    if filename = options[:filename] || options[:file]
+      prince.pdf_from_string_to_file(html_string, filename)
+    else
+      prince.pdf_from_string(html_string)
+    end
   end
 
   def make_and_send_pdf(pdf_name, options = {})

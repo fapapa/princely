@@ -1,4 +1,4 @@
-# Prince XML Ruby interface. 
+# PrinceXML Ruby interface. 
 # http://www.princexml.com
 #
 # Library by Subimage Interactive - http://www.subimage.com
@@ -6,17 +6,20 @@
 #
 # USAGE
 # -----------------------------------------------------------------------------
-#   prince = Prince.new()
+#   princely = Princely.new()
 #   html_string = render_to_string(:template => 'some_document')
 #   send_data(
-#     prince.pdf_from_string(html_string),
+#     princely.pdf_from_string(html_string),
 #     :filename => 'some_document.pdf'
 #     :type => 'application/pdf'
 #   )
 #
+$:.unshift(File.dirname(__FILE__))
 require 'logger'
 
-class Prince
+class Princely
+  VERSION = "1.0.0" unless const_defined?("VERSION")
+  
   attr_accessor :exe_path, :style_sheets, :log_file, :logger
 
   # Initialize method
@@ -24,6 +27,7 @@ class Prince
   def initialize()
     # Finds where the application lives, so we can call it.
     @exe_path = `which prince`.chomp
+    raise "Cannot find prince command-line app in $PATH" if @exe_path.length == 0
   	@style_sheets = ''
   	@log_file = "#{RAILS_ROOT}/log/prince.log"
   	@logger = RAILS_DEFAULT_LOGGER
@@ -53,7 +57,7 @@ class Prince
   # Returns PDF as a stream, so we can use send_data to shoot
   # it down the pipe using Rails.
   #
-  def pdf_from_string(string)
+  def pdf_from_string(string, output_file = '-')
     path = self.exe_path()
     # Don't spew errors to the standard out...and set up to take IO 
     # as input and output
@@ -71,5 +75,22 @@ class Prince
     result = pdf.gets(nil)
     pdf.close_read
     return result
+  end
+
+  def pdf_from_string_to_file(string, output_file)
+    path = self.exe_path()
+    # Don't spew errors to the standard out...and set up to take IO 
+    # as input and output
+    path << " --silent - -o #{output_file} >> #{@log_file} 2>> #{@log_file}"
+    
+    # Show the command used...
+    logger.info "\n\nPRINCE XML PDF COMMAND"
+    logger.info path
+    logger.info ''
+    
+    # Actually call the prince command, and pass the entire data stream back.
+    pdf = IO.popen(path, "w+")
+    pdf.puts(string)
+    pdf.close
   end
 end
